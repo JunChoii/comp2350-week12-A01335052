@@ -8,22 +8,9 @@ const router = require("express").Router();
 router.get("/", async (req, res) => {
   console.log("page hit");
   try {
-    console.log("Test");
-    res.render("index", { message: "This is Awesome!" });
-  } catch (ex) {
-    res.render("error", { message: "Error" });
-    console.log("Error");
-    console.log(ex);
-  }
-});
-
-router.get("/", async (req, res) => {
-  console.log("page hit");
-  try {
     const result = await User.find({})
       .select("first_name last_name email id")
-      .exec()
-      .save();
+      .exec();
     console.log(result);
     res.render("index", { allUsers: result });
   } catch (ex) {
@@ -32,6 +19,28 @@ router.get("/", async (req, res) => {
     console.log(ex);
   }
 });
+
+router.get('/showPets', async (req, res) => {
+  console.log("page hit");
+  try {
+  const schema = Joi.string().max(25).required();
+  const validationResult = schema.validate(req.query.id);
+  if (validationResult.error != null) {
+  console.log(validationResult.error);
+  throw validationResult.error;
+  }
+  const userResult = await User.findOne({_id: req.query.id})
+   .select('first_name id name ')
+  .populate('pets').exec();
+  console.log(userResult);
+  res.render('pet', {userAndPets: userResult});
+  }
+  catch(ex) {
+  res.render('error', {message: 'Error'});
+  console.log("Error");
+  console.log(ex);
+  }
+  });
 
 router.get("/populateData", async (req, res) => {
   console.log("populate Data");
@@ -66,5 +75,6 @@ router.get("/populateData", async (req, res) => {
     console.log(ex);
   }
 });
+
 
 module.exports = router;
